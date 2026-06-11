@@ -199,3 +199,177 @@
         .resultado-final h2 {
             font-size: 2.2rem;
             color: var(--cor-mel-escuro);
+            margin-bottom: 15px;
+        }
+
+        .pontuacao {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--cor-verde);
+            margin: 20px 0;
+        }
+
+        /* Responsividade para telas menores */
+        @media (max-width: 768px) {
+            .abelha-decorativa { display: none; }
+            .container { padding: 25px 15px; }
+            .botoes-container { flex-direction: column; }
+            .btn { width: 100%; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="decoracao-mel"></div>
+    <div class="abelha-decorativa" id="abelha-esquerda">🐝</div>
+    <div class="abelha-decorativa" id="abelha-direita">🐝</div>
+
+    <div class="container" id="quiz-container">
+        
+        <div id="jogo-ativo">
+            <h1>Quiz Agrinho 2026</h1>
+            <p class="subtitulo">Agro forte, futuro sustentável 🌾</p>
+            
+            <div class="progresso" id="contador-progresso">Pergunta 1 de 7</div>
+            
+            <div class="pergunta-box" id="texto-pergunta">
+                Carregando pergunta...
+            </div>
+            
+            <div class="botoes-container">
+                <button class="btn btn-verdadeiro" onclick="verificarResposta(true)">👍 Verdadeiro</button>
+                <button class="btn btn-falso" onclick="verificarResposta(false)">👎 Falso</button>
+            </div>
+
+            <div class="feedback" id="feedback-resposta"></div>
+        </div>
+
+        <div id="jogo-concluido" class="resultado-final">
+            <h2>Missão Cumprida! 🍯</h2>
+            <p>Você ajudou a nossa abelha a entender melhor o equilíbrio entre a produção e o meio ambiente!</p>
+            <div class="pontuacao" id="pontuacao-texto">0 / 0</div>
+            <p id="mensagem-elogio" style="font-weight: bold; margin-bottom: 20px;"></p>
+            <button class="btn btn-reiniciar" id="btn-reiniciar" onclick="reiniciarJogo()">Jogar Novamente 🔄</button>
+        </div>
+
+    </div>
+
+    <script>
+        // Banco de dados de perguntas focadas no tema do Agrinho
+        const perguntas = [
+            {
+                texto: "As abelhas são fundamentais para o agro sustentável porque são responsáveis pela polinização de grande parte das culturas agrícolas.",
+                resposta: true,
+                explicacao: "Correto! Sem as abelhas, a produção de alimentos e a biodiversidade seriam severamente afetadas."
+            },
+            {
+                texto: "O plantio direto na palha aumenta a erosão do solo e polui os rios locais.",
+                resposta: false,
+                explicacao: "Falso! O plantio direto protege o solo contra a erosão e conserva a umidade da terra."
+            },
+            {
+                texto: "A tecnologia dos drones e sensores ajuda a economizar água e aplicar insumos apenas onde a planta realmente necessita.",
+                resposta: true,
+                explicacao: "Exato! Isso se chama Agricultura de Precisão, reduzindo o desperdício."
+            },
+            {
+                texto: "Para garantir o equilíbrio ambiental, as propriedades rurais devem manter áreas de Reserva Legal e Preservação Permanente (APPs).",
+                resposta: true,
+                explicacao: "Perfeito! Essas áreas protegem as fontes de água e a fauna local."
+            },
+            {
+                texto: "A rotação de culturas desgasta os nutrientes do solo de forma mais rápida do que plantar a mesma cultura todo ano.",
+                resposta: false,
+                explicacao: "Falso! A rotação de culturas melhora a saúde do solo e quebra o ciclo de pragas."
+            },
+            {
+                texto: "O controle biológico utiliza inimigos naturais (como insetos benéficos) para combater pragas sem agredir o meio ambiente.",
+                resposta: true,
+                explicacao: "Isso mesmo! É uma alternativa altamente sustentável aos defensivos químicos químicos."
+            },
+            {
+                texto: "Sustentabilidade no campo significa focar apenas na preservação da floresta, deixando de lado a produtividade econômica do produtor rural.",
+                resposta: false,
+                explicacao: "Falso! O verdadeiro agro sustentável equilibra a conservação ambiental com a viabilidade econômica e o desenvolvimento social."
+            }
+        ];
+
+        let indicePerguntaAtual = 0;
+        let pontuacao = 0;
+        let respondido = false;
+
+        const elementoPergunta = document.getElementById("texto-pergunta");
+        const elementoProgresso = document.getElementById("contador-progresso");
+        const elementoFeedback = document.getElementById("feedback-resposta");
+        const telaJogoAtivo = document.getElementById("jogo-ativo");
+        const telaJogoConcluido = document.getElementById("jogo-concluido");
+        const elementoPontuacao = document.getElementById("pontuacao-texto");
+        const elementoElogio = document.getElementById("mensagem-elogio");
+        const btnReiniciar = document.getElementById("btn-reiniciar");
+
+        function carregarPergunta() {
+            respondido = false;
+            elementoFeedback.style.opacity = "0";
+            
+            if (indicePerguntaAtual < perguntas.length) {
+                elementoProgresso.innerText = `Pergunta ${indicePerguntaAtual + 1} de ${perguntas.length}`;
+                elementoPergunta.innerText = perguntas[indicePerguntaAtual].texto;
+            } else {
+                mostrarResultadoFinal();
+            }
+        }
+
+        function verificarResposta(respostaUsuario) {
+            if (respondido) return; // Evita cliques múltiplos na mesma pergunta
+            respondido = true;
+
+            const perguntaAtual = perguntas[indicePerguntaAtual];
+            
+            if (respostaUsuario === perguntaAtual.resposta) {
+                pontuacao++;
+                elementoFeedback.innerText = "⭐ " + perguntaAtual.explicacao;
+                elementoFeedback.className = "feedback correto";
+            } else {
+                elementoFeedback.innerText = "❌ " + perguntaAtual.explicacao;
+                elementoFeedback.className = "feedback incorreto";
+            }
+            
+            elementoFeedback.style.opacity = "1";
+
+            // Avança para a próxima pergunta após 3.5 segundos para dar tempo de ler o feedback
+            setTimeout(() => {
+                indicePerguntaAtual++;
+                carregarPergunta();
+            }, 3500);
+        }
+
+        function mostrarResultadoFinal() {
+            telaJogoAtivo.style.display = "none";
+            telaJogoConcluido.style.display = "block";
+            btnReiniciar.style.display = "block";
+            
+            elementoPontuacao.innerText = `${pontuacao} de ${perguntas.length}`;
+            
+            if (pontuacao === perguntas.length) {
+                elementoElogio.innerText = "Incrível! Você é um mestre da sustentabilidade no campo! 👑🌾";
+            } else if (pontuacao >= Math.ceil(perguntas.length / 2)) {
+                elementoElogio.innerText = "Muito bom! Você entende bem como equilibrar produção e natureza! 🐝";
+            } else {
+                elementoElogio.innerText = "Continue estudando! O futuro do nosso planeta depende desse equilíbrio. 💚";
+            }
+        }
+
+        function reiniciarJogo() {
+            indicePerguntaAtual = 0;
+            pontuacao = 0;
+            telaJogoConcluido.style.display = "none";
+            btnReiniciar.style.display = "none";
+            telaJogoAtivo.style.display = "block";
+            carregarPergunta();
+        }
+
+        // Inicia o jogo assim que a página carrega
+        window.onload = carregarPergunta;
+    </script>
+</body>
+</html>
